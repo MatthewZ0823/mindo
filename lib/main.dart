@@ -80,21 +80,30 @@ class _MyHomePageState extends State<MyHomePage> {
         child: TextField(
           decoration: InputDecoration(
             border: InputBorder.none,
-            // filled: true,
-            // fillColor: Theme.of(context).primaryColor,
           ),
           keyboardType: TextInputType.multiline,
           maxLines: null,
           expands: true,
         ),
       ),
-      bottomNavigationBar: const BottomAppBar(),
+      bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.notes), label: 'Scratch'),
+          BottomNavigationBarItem(icon: Icon(Icons.check), label: 'TODO'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month),
+            label: 'Calendar',
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Record',
         child: const Icon(Icons.mic),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
