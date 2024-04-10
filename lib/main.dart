@@ -1,7 +1,4 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,12 +40,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final TextEditingController _controller = TextEditingController();
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  addText() {
+    final String text = _controller.value.text;
+    final String before =
+        text.substring(0, _controller.value.selection.extentOffset);
+    final String after =
+        text.substring(_controller.value.selection.extentOffset);
+    _controller.value = _controller.value.copyWith(
+      text: "${before}thing$after",
+    );
   }
 
   @override
@@ -75,15 +77,16 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: TextField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             border: InputBorder.none,
           ),
           keyboardType: TextInputType.multiline,
           maxLines: null,
           expands: true,
+          controller: _controller,
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -99,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: addText,
         tooltip: 'Record',
         child: const Icon(Icons.mic),
       ),
