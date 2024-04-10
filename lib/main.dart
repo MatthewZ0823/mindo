@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Mindo'),
+      home: const MyHomePage(title: 'Scratch'),
     );
   }
 }
@@ -75,18 +75,17 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+      body: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: TextField(
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            // filled: true,
+            // fillColor: Theme.of(context).primaryColor,
+          ),
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+          expands: true,
         ),
       ),
       bottomNavigationBar: const BottomAppBar(),
