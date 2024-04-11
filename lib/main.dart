@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,15 +25,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -40,17 +32,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController _controller = TextEditingController();
+  final QuillController _controller = QuillController.basic();
 
   addText() {
-    final String text = _controller.value.text;
-    final String before =
-        text.substring(0, _controller.value.selection.extentOffset);
-    final String after =
-        text.substring(_controller.value.selection.extentOffset);
-    _controller.value = _controller.value.copyWith(
-      text: "${before}thing$after",
-    );
+    setState(() {
+      _controller.document.insert(_controller.selection.start, "hello world");
+    });
   }
 
   @override
@@ -79,14 +66,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: TextField(
-          decoration: const InputDecoration(
-            border: InputBorder.none,
+        child: QuillEditor.basic(
+          configurations: QuillEditorConfigurations(
+            controller: _controller,
+            showCursor: true,
+            maxHeight: null,
+            minHeight: null,
+            expands: true,
+            scrollable: true,
+            floatingCursorDisabled: true,
           ),
-          keyboardType: TextInputType.multiline,
-          maxLines: null,
-          expands: true,
-          controller: _controller,
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
