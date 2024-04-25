@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:mindo/custom_block_embeds.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,9 +37,62 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final QuillController _controller = QuillController.basic();
 
+  Future<void> _addEditNote(BuildContext context, {Document? document}) async {
+    final isEditing = document != null;
+    final quillEditorController = QuillController(
+      document: document ?? Document(),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        titlePadding: const EdgeInsets.only(left: 16, top: 8),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('${isEditing ? 'Edit' : 'Add'} note'),
+            IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.close),
+            )
+          ],
+        ),
+        content: QuillEditor.basic(
+          configurations: QuillEditorConfigurations(
+            controller: quillEditorController,
+            readOnly: false,
+          ),
+        ),
+      ),
+    );
+
+    if (quillEditorController.document.isEmpty()) return;
+
+    final block = BlockEmbed.custom(
+      NotesBlockEmbed.fromDocument(quillEditorController.document),
+    );
+    final controller = _controller;
+    final index = controller.selection.baseOffset;
+    final length = controller.selection.extentOffset - index;
+
+    if (isEditing) {
+      final offset =
+          getEmbedNode(controller, controller.selection.start).offset;
+      controller.replaceText(
+          offset, 1, block, TextSelection.collapsed(offset: offset));
+    } else {
+      controller.replaceText(index, length, block, null);
+    }
+  }
+
   addText() {
+    jsonDecode("{}");
     setState(() {
-      _controller.document.insert(_controller.selection.start, "hello world");
+      NotesBlockEmbed myEmbed = NotesBlockEmbed.fromDocument(Document());
+      _controller.document
+          .insert(_controller.selection.extentOffset, "hello world");
+      _controller.document.insert(_controller.selection.extentOffset, myEmbed);
     });
   }
 
@@ -75,6 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
             expands: true,
             scrollable: true,
             floatingCursorDisabled: true,
+            embedBuilders: [NotesEmbedBuilder(addEditNote: _addEditNote)],
           ),
         ),
       ),
