@@ -2,25 +2,25 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert' show jsonDecode, jsonEncode;
 
-class NotesBlockEmbed extends CustomBlockEmbed {
-  const NotesBlockEmbed(String value) : super(noteType, value);
+class VoiceMemoEmbed extends CustomBlockEmbed {
+  const VoiceMemoEmbed(String value) : super(embedType, value);
 
-  static const String noteType = 'notes';
+  static const String embedType = 'voiceMemo';
 
-  static NotesBlockEmbed fromDocument(Document document) =>
-      NotesBlockEmbed(jsonEncode(document.toDelta().toJson()));
+  static VoiceMemoEmbed fromDocument(Document document) =>
+      VoiceMemoEmbed(jsonEncode(document.toDelta().toJson()));
 
   Document get document => Document.fromJson(jsonDecode(data));
   // Document get document => Document.fromHtml(data);
 }
 
-class NotesEmbedBuilder extends EmbedBuilder {
-  NotesEmbedBuilder({required this.addEditNote});
+class VoiceMemoEmbedBuilder extends EmbedBuilder {
+  VoiceMemoEmbedBuilder({required this.addEditNote});
 
   Future<void> Function(BuildContext context, {Document? document}) addEditNote;
 
   @override
-  String get key => 'notes';
+  String get key => 'voiceMemo';
 
   @override
   Widget build(
@@ -31,7 +31,7 @@ class NotesEmbedBuilder extends EmbedBuilder {
     bool inline,
     TextStyle textStyle,
   ) {
-    final notes = NotesBlockEmbed(node.value.data).document;
+    final notes = VoiceMemoEmbed(node.value.data).document;
 
     return Material(
       color: Colors.transparent,

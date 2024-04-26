@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (quillEditorController.document.isEmpty()) return;
 
     final block = BlockEmbed.custom(
-      NotesBlockEmbed.fromDocument(quillEditorController.document),
+      VoiceMemoEmbed.fromDocument(quillEditorController.document),
     );
     final controller = _controller;
     final index = controller.selection.baseOffset;
@@ -89,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
   addText() {
     jsonDecode("{}");
     setState(() {
-      NotesBlockEmbed myEmbed = NotesBlockEmbed.fromDocument(Document());
+      VoiceMemoEmbed myEmbed = VoiceMemoEmbed.fromDocument(Document());
       _controller.document
           .insert(_controller.selection.extentOffset, "hello world");
       _controller.document.insert(_controller.selection.extentOffset, myEmbed);
@@ -131,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
             expands: true,
             scrollable: true,
             floatingCursorDisabled: true,
-            embedBuilders: [NotesEmbedBuilder(addEditNote: _addEditNote)],
+            embedBuilders: [VoiceMemoEmbedBuilder(addEditNote: _addEditNote)],
           ),
         ),
       ),
