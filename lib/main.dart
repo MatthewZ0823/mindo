@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:mindo/custom_block_embeds.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:just_audio/just_audio.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,6 +37,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String? audioPath;
+
+  @override
+  void initState() {
+    super.initState();
+    getApplicationSupportDirectory().then((directory) {
+      setState(() {
+        audioPath = directory.path;
+        print("audioPath: $audioPath");
+      });
+    });
+  }
+
   final QuillController _controller = QuillController.basic();
 
   Future<void> _addEditNote(BuildContext context, {Document? document}) async {
@@ -122,17 +137,31 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: QuillEditor.basic(
-          configurations: QuillEditorConfigurations(
-            controller: _controller,
-            showCursor: true,
-            maxHeight: null,
-            minHeight: null,
-            expands: true,
-            scrollable: true,
-            floatingCursorDisabled: true,
-            embedBuilders: [VoiceMemoEmbedBuilder(addEditNote: _addEditNote)],
-          ),
+        child: Column(
+          children: [
+            TextButton(
+              onPressed: () async {
+                final player = AudioPlayer();
+                await player
+                    .setUrl('file:///C:/Users/emzee/Downloads/vine-boom.mp3');
+                await player.play();
+              },
+              child: const Text("test"),
+            ),
+            Expanded(
+              child: QuillEditor.basic(
+                configurations: QuillEditorConfigurations(
+                  controller: _controller,
+                  showCursor: true,
+                  scrollable: true,
+                  floatingCursorDisabled: true,
+                  embedBuilders: [
+                    VoiceMemoEmbedBuilder(addEditNote: _addEditNote)
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
