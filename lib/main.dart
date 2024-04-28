@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:mindo/custom_block_embeds.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:record/record.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,19 +38,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String? audioPath;
-
-  @override
-  void initState() {
-    super.initState();
-    getApplicationSupportDirectory().then((directory) {
-      setState(() {
-        audioPath = directory.path;
-        print("audioPath: $audioPath");
-      });
-    });
-  }
-
+  final _record = AudioRecorder();
   final QuillController _controller = QuillController.basic();
 
   Future<void> _addEditNote(BuildContext context, {Document? document}) async {
@@ -146,7 +135,32 @@ class _MyHomePageState extends State<MyHomePage> {
                     .setUrl('file:///C:/Users/emzee/Downloads/vine-boom.mp3');
                 await player.play();
               },
-              child: const Text("test"),
+              child: const Text("vine BOOM"),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final documentsDir =
+                        await getApplicationDocumentsDirectory();
+
+                    if (await _record.hasPermission()) {
+                      await _record.start(
+                        const RecordConfig(numChannels: 1),
+                        path: "${documentsDir.path}/test_audio.m4a",
+                      );
+                    }
+                  },
+                  child: const Text("Start Recording"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await _record.stop();
+                  },
+                  child: const Text("Stop Recording"),
+                ),
+              ],
             ),
             Expanded(
               child: QuillEditor.basic(
