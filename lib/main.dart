@@ -6,6 +6,7 @@ import 'package:mindo/custom_block_embeds.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:record/record.dart';
+import 'record_button.dart';
 
 void main() {
   runApp(const MyApp());
@@ -190,11 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addText,
-        tooltip: 'Record',
-        child: const Icon(Icons.mic),
-      ),
+      floatingActionButton: const RecordButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
