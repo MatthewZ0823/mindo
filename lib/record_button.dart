@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
 
 class RecordButton extends StatefulWidget {
   const RecordButton({
@@ -10,12 +12,40 @@ class RecordButton extends StatefulWidget {
 }
 
 class _RecordButtonState extends State<RecordButton> {
-  bool isRecording = false;
+  final _recorder = AudioRecorder();
+  RecordState _recordState = RecordState.stop;
 
-  void toggleRecording() {
-    setState(() {
-      isRecording = !isRecording;
+  @override
+  void initState() {
+    _recorder.onStateChanged().listen((recordState) {
+      setState(() {
+        _recordState = recordState;
+      });
     });
+    super.initState();
+  }
+
+  void onRecord() async {
+    final documentsDir = await getApplicationDocumentsDirectory();
+
+    if (await _recorder.hasPermission()) {
+      await _recorder.start(
+        const RecordConfig(numChannels: 1),
+        path: "${documentsDir.path}/test_audio.m4a",
+      );
+    }
+  }
+
+  void togglePause() async {
+    if (_recordState == RecordState.pause) {
+      await _recorder.resume();
+    } else if (_recordState == RecordState.record) {
+      await _recorder.pause();
+    }
+  }
+
+  void onStop() async {
+    await _recorder.stop();
   }
 
   @override
@@ -33,31 +63,33 @@ class _RecordButtonState extends State<RecordButton> {
       ),
     );
 
-    if (!isRecording) {
+    if (_recordState == RecordState.stop) {
       return IconButton(
         style: style,
-        onPressed: toggleRecording,
+        onPressed: onRecord,
         icon: const Icon(Icons.mic),
       );
-    } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            style: style,
-            color: Theme.of(context).colorScheme.primary,
-            onPressed: () {},
-            icon: const Icon(Icons.pause),
-          ),
-          const SizedBox(width: 10),
-          IconButton(
-            style: style,
-            color: Theme.of(context).colorScheme.primary,
-            onPressed: toggleRecording,
-            icon: const Icon(Icons.stop),
-          ),
-        ],
-      );
     }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          style: style,
+          color: Theme.of(context).colorScheme.primary,
+          onPressed: togglePause,
+          icon: (_recordState == RecordState.pause)
+              ? const Icon(Icons.play_arrow)
+              : const Icon(Icons.pause),
+        ),
+        const SizedBox(width: 10),
+        IconButton(
+          style: style,
+          color: Theme.of(context).colorScheme.primary,
+          onPressed: onStop,
+          icon: const Icon(Icons.stop),
+        ),
+      ],
+    );
   }
 }
