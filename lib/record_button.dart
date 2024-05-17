@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class RecordButton extends StatefulWidget {
   const RecordButton({
@@ -27,11 +30,19 @@ class _RecordButtonState extends State<RecordButton> {
 
   void onRecord() async {
     final documentsDir = await getApplicationDocumentsDirectory();
+    final mindoDir =
+        await Directory("${documentsDir.path}/mindo_test_recordings").create();
+
+    final now = DateTime.now();
+    final fileName =
+        "${now.year}-${now.month}-${now.day}--${now.hour}-${now.minute}-${now.second}.m4a";
+
+    final audioPath = path.join(mindoDir.path, fileName);
 
     if (await _recorder.hasPermission()) {
       await _recorder.start(
         const RecordConfig(numChannels: 1),
-        path: "${documentsDir.path}/test_audio.m4a",
+        path: audioPath,
       );
     }
   }
@@ -51,7 +62,8 @@ class _RecordButtonState extends State<RecordButton> {
   @override
   Widget build(BuildContext context) {
     final style = ButtonStyle(
-      iconSize: const MaterialStatePropertyAll(48),
+      iconSize: const MaterialStatePropertyAll(30),
+      fixedSize: const MaterialStatePropertyAll(Size.square(56)),
       iconColor: MaterialStatePropertyAll(
           Theme.of(context).colorScheme.onPrimaryContainer),
       backgroundColor: MaterialStatePropertyAll(
