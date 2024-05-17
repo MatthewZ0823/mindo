@@ -6,9 +6,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
 class RecordButton extends StatefulWidget {
-  const RecordButton({
-    super.key,
-  });
+  final void Function(String? audioPath) onRecordingStopped;
+
+  const RecordButton({super.key, required this.onRecordingStopped});
 
   @override
   State<RecordButton> createState() => _RecordButtonState();
@@ -28,7 +28,7 @@ class _RecordButtonState extends State<RecordButton> {
     super.initState();
   }
 
-  void onRecord() async {
+  void handleRecord() async {
     final documentsDir = await getApplicationDocumentsDirectory();
     final mindoDir =
         await Directory("${documentsDir.path}/mindo_test_recordings").create();
@@ -55,8 +55,15 @@ class _RecordButtonState extends State<RecordButton> {
     }
   }
 
-  void onStop() async {
-    await _recorder.stop();
+  void handleStop() async {
+    final audioPath = await _recorder.stop();
+    widget.onRecordingStopped(audioPath);
+  }
+
+  @override
+  void dispose() {
+    _recorder.dispose();
+    super.dispose();
   }
 
   @override
@@ -78,7 +85,7 @@ class _RecordButtonState extends State<RecordButton> {
     if (_recordState == RecordState.stop) {
       return IconButton(
         style: style,
-        onPressed: onRecord,
+        onPressed: handleRecord,
         icon: const Icon(Icons.mic),
       );
     }
@@ -98,7 +105,7 @@ class _RecordButtonState extends State<RecordButton> {
         IconButton(
           style: style,
           color: Theme.of(context).colorScheme.primary,
-          onPressed: onStop,
+          onPressed: handleStop,
           icon: const Icon(Icons.stop),
         ),
       ],

@@ -42,6 +42,12 @@ class _MyHomePageState extends State<MyHomePage> {
   final _record = AudioRecorder();
   final QuillController _controller = QuillController.basic();
 
+  void handleRecordingStopped(String? audioPath) {
+    VoiceMemoEmbed myEmbed =
+        VoiceMemoEmbed.fromDocument(Document.fromHtml(audioPath ?? ''));
+    _controller.document.insert(_controller.selection.extentOffset, myEmbed);
+  }
+
   Future<void> _addEditNote(BuildContext context, {Document? document}) async {
     final isEditing = document != null;
     final quillEditorController = QuillController(
@@ -191,7 +197,9 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      floatingActionButton: const RecordButton(),
+      floatingActionButton: RecordButton(
+        onRecordingStopped: handleRecordingStopped,
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
