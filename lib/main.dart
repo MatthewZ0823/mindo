@@ -41,11 +41,27 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _record = AudioRecorder();
   final QuillController _controller = QuillController.basic();
+  final ScrollController scrollController = ScrollController();
+
+  late FocusNode focusNode;
+
+  @override
+  void initState() {
+    focusNode = FocusNode();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    focusNode.dispose();
+    super.dispose();
+  }
 
   void handleRecordingStopped(String? audioPath) {
     VoiceMemoEmbed myEmbed =
         VoiceMemoEmbed.fromDocument(Document.fromHtml(audioPath ?? ''));
     _controller.document.insert(_controller.selection.extentOffset, myEmbed);
+    focusNode.requestFocus();
   }
 
   Future<void> _addEditNote(BuildContext context, {Document? document}) async {
@@ -167,10 +183,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   child: const Text("Stop Recording"),
                 ),
+                TextButton(
+                  onPressed: () {
+                    focusNode.requestFocus();
+                  },
+                  child: const Text("Focus Editor"),
+                )
               ],
             ),
             Expanded(
               child: QuillEditor.basic(
+                focusNode: focusNode,
                 configurations: QuillEditorConfigurations(
                   controller: _controller,
                   showCursor: true,
