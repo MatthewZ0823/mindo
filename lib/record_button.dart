@@ -30,8 +30,8 @@ class _RecordButtonState extends State<RecordButton> {
 
   void handleRecord() async {
     final documentsDir = await getApplicationDocumentsDirectory();
-    final mindoDir =
-        await Directory("${documentsDir.path}/mindo_test_recordings").create();
+    final mindoPath = path.join(documentsDir.path, "mindo_test_recordings");
+    final mindoDir = await Directory(mindoPath).create();
 
     final now = DateTime.now();
     final fileName =
