@@ -76,6 +76,8 @@ class VoiceMemoEmbed extends CustomBlockEmbed {
 class VoiceMemoEmbedBuilder extends EmbedBuilder {
   @override
   String get key => 'voiceMemo';
+  @override
+  bool get expanded => false;
 
   @override
   Widget build(
