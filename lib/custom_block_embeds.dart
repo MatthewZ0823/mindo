@@ -120,9 +120,8 @@ class RecordingChip extends StatefulWidget {
 }
 
 class _RecordingChipState extends State<RecordingChip> {
-  var _isPlaying = false;
-  StreamSubscription? playingSubscription;
   late AudioPlayer _player;
+  StreamSubscription? playingSubscription;
 
   @override
   void initState() {
@@ -132,9 +131,7 @@ class _RecordingChipState extends State<RecordingChip> {
     playingSubscription = _player.playingStream.listen((playing) {
       // Listen for [_player] auto stopping after recording is finished
       if (!playing) {
-        setState(() {
-          _isPlaying = false;
-        });
+        setState(() {});
       }
     });
 
@@ -144,39 +141,25 @@ class _RecordingChipState extends State<RecordingChip> {
   @override
   void dispose() {
     _player.dispose();
-    playingSubscription?.cancel();
-
     super.dispose();
   }
 
   void playAudio() {
     setState(() {
-      _isPlaying = true;
+      _player.play();
     });
-
-    _player.play();
   }
 
   void pauseAudio() {
     setState(() {
-      _isPlaying = false;
+      _player.pause();
     });
-
-    _player.pause();
   }
 
   void restartAudio() {
     setState(() {
-      _isPlaying = true;
-    });
-
-    _player.seek(Duration.zero);
-    _player.play();
-  }
-
-  void togglePlaying() {
-    setState(() {
-      _isPlaying = !_isPlaying;
+      _player.seek(Duration.zero);
+      _player.play();
     });
   }
 
@@ -188,9 +171,9 @@ class _RecordingChipState extends State<RecordingChip> {
     return GestureDetector(
       onLongPress: restartAudio,
       child: ActionChip(
-        onPressed: _isPlaying ? pauseAudio : playAudio,
+        onPressed: _player.playing ? pauseAudio : playAudio,
         avatar: Icon(
-          _isPlaying ? Icons.pause : Icons.play_arrow,
+          _player.playing ? Icons.pause : Icons.play_arrow,
           color: Colors.black,
         ),
         backgroundColor: Colors.transparent,
