@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -89,13 +91,115 @@ class VoiceMemoEmbedBuilder extends EmbedBuilder {
     TextStyle textStyle,
   ) {
     final String embedData = node.value.data;
-    final duration = VoiceMemoEmbed.fromEmbedData(embedData).duration;
+    final embed = VoiceMemoEmbed.fromEmbedData(embedData);
+    final duration = embed.duration;
+    final audioPath = embed.audioPath;
 
-    return Chip(
-      avatar: const Icon(Icons.mic, color: Colors.black),
-      backgroundColor: Colors.red,
-      side: BorderSide.none,
-      label: Text(duration == null ? "--:--" : _printDuration(duration)),
+    return RecordingChip(
+      duration: duration,
+      textStyle: textStyle,
+      audioPath: audioPath,
+    );
+  }
+}
+
+class RecordingChip extends StatefulWidget {
+  const RecordingChip({
+    super.key,
+    required this.duration,
+    required this.textStyle,
+    required this.audioPath,
+  });
+
+  final Duration? duration;
+  final TextStyle textStyle;
+  final String audioPath;
+
+  @override
+  State<RecordingChip> createState() => _RecordingChipState();
+}
+
+class _RecordingChipState extends State<RecordingChip> {
+  var _isPlaying = false;
+  StreamSubscription? playingSubscription;
+  late AudioPlayer _player;
+
+  @override
+  void initState() {
+    _player = AudioPlayer();
+    _player.setUrl(widget.audioPath);
+
+    playingSubscription = _player.playingStream.listen((playing) {
+      // Listen for [_player] auto stopping after recording is finished
+      if (!playing) {
+        setState(() {
+          _isPlaying = false;
+        });
+      }
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    playingSubscription?.cancel();
+
+    super.dispose();
+  }
+
+  void playAudio() {
+    setState(() {
+      _isPlaying = true;
+    });
+
+    _player.play();
+  }
+
+  void pauseAudio() {
+    setState(() {
+      _isPlaying = false;
+    });
+
+    _player.pause();
+  }
+
+  void restartAudio() {
+    setState(() {
+      _isPlaying = true;
+    });
+
+    _player.seek(Duration.zero);
+    _player.play();
+  }
+
+  void togglePlaying() {
+    setState(() {
+      _isPlaying = !_isPlaying;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This exists so promoting [duration] is possible
+    final $duration = widget.duration;
+
+    return GestureDetector(
+      onLongPress: restartAudio,
+      child: ActionChip(
+        onPressed: _isPlaying ? pauseAudio : playAudio,
+        avatar: Icon(
+          _isPlaying ? Icons.pause : Icons.play_arrow,
+          color: Colors.black,
+        ),
+        backgroundColor: Colors.transparent,
+        side: const BorderSide(color: Colors.red),
+        label: Text(
+          $duration == null ? "--:--" : _printDuration($duration),
+          style: widget.textStyle,
+        ),
+      ),
     );
   }
 }
