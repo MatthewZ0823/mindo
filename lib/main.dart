@@ -100,74 +100,19 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextButton(
-              onPressed: () async {
-                final player = AudioPlayer();
-                await player
-                    .setUrl('file:///C:/Users/emzee/Downloads/vine-boom.mp3');
-                await player.play();
-              },
-              child: const Text("vine BOOM"),
+        child: Expanded(
+          child: QuillEditor.basic(
+            focusNode: focusNode,
+            configurations: QuillEditorConfigurations(
+              expands: true,
+              controller: _controller,
+              showCursor: true,
+              scrollable: true,
+              floatingCursorDisabled: true,
+              embedBuilders: [VoiceMemoEmbedBuilder()],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () async {
-                    final documentsDir =
-                        await getApplicationDocumentsDirectory();
-
-                    if (await _record.hasPermission()) {
-                      await _record.start(
-                        const RecordConfig(numChannels: 1),
-                        path: "${documentsDir.path}/test_audio.m4a",
-                      );
-                    }
-                  },
-                  child: const Text("Start Recording"),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    await _record.stop();
-                  },
-                  child: const Text("Stop Recording"),
-                ),
-                TextButton(
-                  onPressed: () {
-                    focusNode.requestFocus();
-                  },
-                  child: const Text("Focus Editor"),
-                )
-              ],
-            ),
-            Expanded(
-              child: QuillEditor.basic(
-                focusNode: focusNode,
-                configurations: QuillEditorConfigurations(
-                  controller: _controller,
-                  showCursor: true,
-                  scrollable: true,
-                  floatingCursorDisabled: true,
-                  embedBuilders: [VoiceMemoEmbedBuilder()],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.notes), label: 'Scratch'),
-          BottomNavigationBarItem(icon: Icon(Icons.check), label: 'TODO'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
-            label: 'Calendar',
           ),
-        ],
+        ),
       ),
       floatingActionButton: RecordButton(
         onRecordingStopped: handleRecordingStopped,
