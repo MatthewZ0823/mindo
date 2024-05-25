@@ -3,35 +3,15 @@ import 'dart:async';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-
-String _printDuration(Duration duration) {
-  String negativeSign = duration.isNegative ? '-' : '';
-  String twoDigits(int n) => n.toString().padLeft(2, "0");
-  String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60).abs());
-  String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60).abs());
-  return "$negativeSign${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
-}
-
-Duration parseDuration(String s) {
-  int hours = 0;
-  int minutes = 0;
-  int micros;
-  List<String> parts = s.split(':');
-  if (parts.length > 2) {
-    hours = int.parse(parts[parts.length - 3]);
-  }
-  if (parts.length > 1) {
-    minutes = int.parse(parts[parts.length - 2]);
-  }
-  micros = (double.parse(parts[parts.length - 1]) * 1000000).round();
-  return Duration(hours: hours, minutes: minutes, microseconds: micros);
-}
+import 'utils.dart';
 
 class VoiceMemoEmbed extends CustomBlockEmbed {
   static const separator = ";";
   static const embedType = 'voiceMemo';
 
   final String _audioPath;
+  // The total duration of the audio is encoded inside the data string
+  // This is for preformance reaons, only having to read the metadata of the file then caching it
   final Duration? _duration;
 
   VoiceMemoEmbed._(embedData, this._audioPath, this._duration)
@@ -51,7 +31,7 @@ class VoiceMemoEmbed extends CustomBlockEmbed {
       if (durationString == "null") {
         duration = null;
       } else {
-        duration = parseDuration(durationString);
+        duration = durationString.parseDuration();
       }
     } catch (_) {
       throw ArgumentError("Could not parse duration in embedData");
@@ -205,8 +185,8 @@ class TimeRemaining extends StatelessWidget {
 
   String _getText(AsyncSnapshot<Duration> snapshot) {
     if (_totalDuration == null) return '--:--';
-    if (!snapshot.hasData) return _printDuration(_totalDuration);
-    return _printDuration(_totalDuration - snapshot.data!);
+    if (!snapshot.hasData) return _totalDuration.printDuration();
+    return (_totalDuration - snapshot.data!).printDuration();
   }
 
   @override
