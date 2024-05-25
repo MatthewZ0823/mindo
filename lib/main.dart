@@ -1,12 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:mindo/custom_block_embeds.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:record/record.dart';
+import 'package:path/path.dart';
+
+import 'date_controller.dart';
 import 'record_button.dart';
+import 'utils.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,21 +38,32 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _record = AudioRecorder();
   final QuillController _controller = QuillController.basic();
-  final ScrollController scrollController = ScrollController();
 
-  late FocusNode focusNode;
+  /// The date of the note
+  DateTime _noteDate = DateTime.now().roundDownDate();
+
+  late FocusNode _focusNode;
+
+  void addDaysToNoteDate(int numDays) {
+    final newDate = _noteDate.addDays(numDays);
+
+    if (newDate.isAfter(DateTime.now())) return;
+
+    setState(() {
+      _noteDate = newDate;
+    });
+  }
 
   @override
   void initState() {
-    focusNode = FocusNode();
+    _focusNode = FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
-    focusNode.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -61,17 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // TODO: Display something while loading myEmbed
     VoiceMemoEmbed myEmbed = await VoiceMemoEmbed.fromPath(audioPath ?? '');
     _controller.document.insert(_controller.selection.extentOffset, myEmbed);
-    focusNode.requestFocus();
-  }
-
-  addText() {
-    jsonDecode("{}");
-    setState(() {
-      // VoiceMemoEmbed myEmbed = VoiceMemoEmbed('test/path');
-      _controller.document
-          .insert(_controller.selection.extentOffset, "hello world");
-      // _controller.document.insert(_controller.selection.extentOffset, myEmbed);
-    });
+    _focusNode.requestFocus();
   }
 
   @override
@@ -100,18 +100,27 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Expanded(
-          child: QuillEditor.basic(
-            focusNode: focusNode,
-            configurations: QuillEditorConfigurations(
-              expands: true,
-              controller: _controller,
-              showCursor: true,
-              scrollable: true,
-              floatingCursorDisabled: true,
-              embedBuilders: [VoiceMemoEmbedBuilder()],
+        child: Column(
+          children: [
+            DateController(
+              onLeftArrowPressed: () => addDaysToNoteDate(-1),
+              onRightArrowPressed: () => addDaysToNoteDate(1),
+              date: _noteDate,
             ),
-          ),
+            Expanded(
+              child: QuillEditor.basic(
+                focusNode: _focusNode,
+                configurations: QuillEditorConfigurations(
+                  expands: true,
+                  controller: _controller,
+                  showCursor: true,
+                  scrollable: true,
+                  floatingCursorDisabled: true,
+                  embedBuilders: [VoiceMemoEmbedBuilder()],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: RecordButton(

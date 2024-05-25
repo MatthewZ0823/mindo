@@ -24,3 +24,14 @@ extension VoiceMemoStringUtils on String {
     return Duration(hours: hours, minutes: minutes, microseconds: micros);
   }
 }
+
+extension DateUtils on DateTime {
+  /// Rounds off the hours, minutes, seconds, and microseconds
+  DateTime roundDownDate() {
+    return DateTime(year, month, day);
+  }
+
+  DateTime addDays(int daysElapsed) {
+    return DateTime(year, month, day + daysElapsed);
+  }
+}
