@@ -103,6 +103,7 @@ class VoiceMemoEmbedBuilder extends EmbedBuilder {
   }
 }
 
+/// Widget that displays the audio recordings as chips. Also allows users to interact with an audio player
 class RecordingChip extends StatefulWidget {
   const RecordingChip({
     super.key,
@@ -121,17 +122,18 @@ class RecordingChip extends StatefulWidget {
 
 class _RecordingChipState extends State<RecordingChip> {
   late AudioPlayer _player;
-  StreamSubscription? playingSubscription;
+  StreamSubscription? _processingStateSubscription;
 
   @override
   void initState() {
     _player = AudioPlayer();
     _player.setUrl(widget.audioPath);
 
-    playingSubscription = _player.playingStream.listen((playing) {
-      // Listen for [_player] auto stopping after recording is finished
-      if (!playing) {
-        setState(() {});
+    _processingStateSubscription =
+        _player.processingStateStream.listen((processState) {
+      // Listen for [_player] completing the audio clip
+      if (processState == ProcessingState.completed) {
+        restartAudio();
       }
     });
 
@@ -141,6 +143,8 @@ class _RecordingChipState extends State<RecordingChip> {
   @override
   void dispose() {
     _player.dispose();
+    _processingStateSubscription?.cancel();
+
     super.dispose();
   }
 
@@ -159,15 +163,11 @@ class _RecordingChipState extends State<RecordingChip> {
   void restartAudio() {
     setState(() {
       _player.seek(Duration.zero);
-      _player.play();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This exists so promoting [duration] is possible
-    final $duration = widget.duration;
-
     return GestureDetector(
       onLongPress: restartAudio,
       child: ActionChip(
@@ -178,11 +178,47 @@ class _RecordingChipState extends State<RecordingChip> {
         ),
         backgroundColor: Colors.transparent,
         side: const BorderSide(color: Colors.red),
-        label: Text(
-          $duration == null ? "--:--" : _printDuration($duration),
-          style: widget.textStyle,
+        label: TimeRemaining(
+          player: _player,
+          textStyle: widget.textStyle,
+          totalDuration: widget.duration,
         ),
       ),
+    );
+  }
+}
+
+/// Widget that displays the time remaining in the audio clip as text
+class TimeRemaining extends StatelessWidget {
+  const TimeRemaining({
+    super.key,
+    required AudioPlayer player,
+    required TextStyle textStyle,
+    required Duration? totalDuration,
+  })  : _player = player,
+        _textStyle = textStyle,
+        _totalDuration = totalDuration;
+
+  final AudioPlayer _player;
+  final TextStyle _textStyle;
+  final Duration? _totalDuration;
+
+  String _getText(AsyncSnapshot<Duration> snapshot) {
+    if (_totalDuration == null) return '--:--';
+    if (!snapshot.hasData) return _printDuration(_totalDuration);
+    return _printDuration(_totalDuration - snapshot.data!);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: _player.positionStream,
+      builder: (BuildContext context, AsyncSnapshot<Duration> snapshot) {
+        return Text(
+          _getText(snapshot),
+          style: _textStyle,
+        );
+      },
     );
   }
 }
