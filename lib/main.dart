@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:intl/intl.dart';
 import 'package:mindo/custom_block_embeds.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 import 'date_controller.dart';
 import 'record_button.dart';
@@ -43,6 +48,8 @@ class _MyHomePageState extends State<MyHomePage> {
   /// The date of the note
   DateTime _noteDate = DateTime.now().roundDownDate();
 
+  static final _fileDateFormatter = DateFormat('y-m-d');
+
   late FocusNode _focusNode;
 
   void addDaysToNoteDate(int numDays) {
@@ -65,6 +72,34 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _focusNode.dispose();
     super.dispose();
+  }
+
+  String _getSaveFileName() => "${_fileDateFormatter.format(_noteDate)}.json";
+  Future<Directory> _getSaveDirectory() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final savePath = path.join(directory.path, "mindo_documents");
+
+    return Directory(savePath);
+  }
+
+  void _saveDocument() async {
+    final jsonString = jsonEncode(_controller.document.toDelta().toJson());
+
+    final saveDir = await _getSaveDirectory();
+    saveDir.create();
+
+    final file = File(path.join(saveDir.path, _getSaveFileName()));
+    file.writeAsString(jsonString);
+  }
+
+  void _loadDocument() async {
+    final saveDir = await _getSaveDirectory();
+
+    final file = File(path.join(saveDir.path, _getSaveFileName()));
+    final documentString = await file.readAsString();
+
+    final json = jsonDecode(documentString);
+    _controller.document = Document.fromJson(json);
   }
 
   void handleRecordingStopped(String? audioPath) async {
@@ -107,6 +142,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onRightArrowPressed: () => addDaysToNoteDate(1),
               date: _noteDate,
             ),
+            TextButton(onPressed: _saveDocument, child: const Text("save")),
+            TextButton(onPressed: _loadDocument, child: const Text("load")),
             Expanded(
               child: QuillEditor.basic(
                 focusNode: _focusNode,

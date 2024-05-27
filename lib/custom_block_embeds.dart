@@ -106,6 +106,7 @@ class _RecordingChipState extends State<RecordingChip> {
 
   @override
   void initState() {
+    // TODO: Sometimes when loading a different document where the audio clip is in the same ish place, it doesn't change the Url of the audio clip and just keeps the old one
     _player = AudioPlayer();
     _player.setUrl(widget.audioPath);
 
