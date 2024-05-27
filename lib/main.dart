@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -44,6 +45,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final QuillController _controller = QuillController.basic();
+  Timer? _autoSaveTimer;
+  StreamSubscription<DocChange>? _changeSubscription;
 
   /// The date of the note
   DateTime _noteDate = DateTime.now().roundDownDate();
@@ -60,17 +63,36 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _noteDate = newDate;
     });
+    _loadDocument();
+  }
+
+  void _setupAutoSave() {
+    _changeSubscription?.cancel();
+    _changeSubscription = _controller.changes.listen(
+      (DocChange change) {
+        print('changing');
+        _autoSaveTimer?.cancel();
+        _autoSaveTimer = Timer(const Duration(seconds: 1), _saveDocument);
+      },
+      onError: (e) => print(e),
+      cancelOnError: false,
+    );
   }
 
   @override
   void initState() {
     _focusNode = FocusNode();
+
+    _loadDocument();
+    _setupAutoSave();
+
     super.initState();
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    _changeSubscription?.cancel();
     super.dispose();
   }
 
@@ -83,6 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _saveDocument() async {
+    print('saving');
     final jsonString = jsonEncode(_controller.document.toDelta().toJson());
 
     final saveDir = await _getSaveDirectory();
@@ -96,10 +119,18 @@ class _MyHomePageState extends State<MyHomePage> {
     final saveDir = await _getSaveDirectory();
 
     final file = File(path.join(saveDir.path, _getSaveFileName()));
-    final documentString = await file.readAsString();
 
-    final json = jsonDecode(documentString);
-    _controller.document = Document.fromJson(json);
+    try {
+      final documentString = await file.readAsString();
+      final json = jsonDecode(documentString);
+
+      _changeSubscription?.cancel();
+      _controller.document = Document.fromJson(json);
+      _setupAutoSave();
+    } on PathNotFoundException {
+      _controller.document = Document();
+      _setupAutoSave();
+    }
   }
 
   void handleRecordingStopped(String? audioPath) async {
