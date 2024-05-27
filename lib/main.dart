@@ -1,13 +1,7 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:intl/intl.dart';
 import 'package:mindo/custom_block_embeds.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
+import 'package:mindo/document_manager.dart';
 
 import 'date_controller.dart';
 import 'record_button.dart';
@@ -45,15 +39,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final QuillController _controller = QuillController.basic();
-  Timer? _autoSaveTimer;
-  StreamSubscription<DocChange>? _changeSubscription;
 
   /// The date of the note
   DateTime _noteDate = DateTime.now().roundDownDate();
 
-  static final _fileDateFormatter = DateFormat('y-m-d');
-
   late FocusNode _focusNode;
+  late DocumentManager _documentManager;
 
   void addDaysToNoteDate(int numDays) {
     final newDate = _noteDate.addDays(numDays);
@@ -63,28 +54,16 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _noteDate = newDate;
     });
-    _loadDocument();
-  }
-
-  void _setupAutoSave() {
-    _changeSubscription?.cancel();
-    _changeSubscription = _controller.changes.listen(
-      (DocChange change) {
-        print('changing');
-        _autoSaveTimer?.cancel();
-        _autoSaveTimer = Timer(const Duration(seconds: 1), _saveDocument);
-      },
-      onError: (e) => print(e),
-      cancelOnError: false,
-    );
+    _documentManager.loadDocument();
   }
 
   @override
   void initState() {
     _focusNode = FocusNode();
+    _documentManager = DocumentManager(_controller, () => _noteDate);
 
-    _loadDocument();
-    _setupAutoSave();
+    _documentManager.loadDocument();
+    _documentManager.setupAutoSave();
 
     super.initState();
   }
@@ -92,45 +71,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _focusNode.dispose();
-    _changeSubscription?.cancel();
+    _documentManager.cancelAutoSave();
+
     super.dispose();
-  }
-
-  String _getSaveFileName() => "${_fileDateFormatter.format(_noteDate)}.json";
-  Future<Directory> _getSaveDirectory() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final savePath = path.join(directory.path, "mindo_documents");
-
-    return Directory(savePath);
-  }
-
-  void _saveDocument() async {
-    print('saving');
-    final jsonString = jsonEncode(_controller.document.toDelta().toJson());
-
-    final saveDir = await _getSaveDirectory();
-    saveDir.create();
-
-    final file = File(path.join(saveDir.path, _getSaveFileName()));
-    file.writeAsString(jsonString);
-  }
-
-  void _loadDocument() async {
-    final saveDir = await _getSaveDirectory();
-
-    final file = File(path.join(saveDir.path, _getSaveFileName()));
-
-    try {
-      final documentString = await file.readAsString();
-      final json = jsonDecode(documentString);
-
-      _changeSubscription?.cancel();
-      _controller.document = Document.fromJson(json);
-      _setupAutoSave();
-    } on PathNotFoundException {
-      _controller.document = Document();
-      _setupAutoSave();
-    }
   }
 
   void handleRecordingStopped(String? audioPath) async {
@@ -173,8 +116,6 @@ class _MyHomePageState extends State<MyHomePage> {
               onRightArrowPressed: () => addDaysToNoteDate(1),
               date: _noteDate,
             ),
-            TextButton(onPressed: _saveDocument, child: const Text("save")),
-            TextButton(onPressed: _loadDocument, child: const Text("load")),
             Expanded(
               child: QuillEditor.basic(
                 focusNode: _focusNode,
