@@ -106,7 +106,6 @@ class _RecordingChipState extends State<RecordingChip> {
 
   @override
   void initState() {
-    // TODO: Sometimes when loading a different document where the audio clip is in the same ish place, it doesn't change the Url of the audio clip and just keeps the old one
     _player = AudioPlayer();
     _player.setUrl(widget.audioPath);
 
@@ -122,6 +121,15 @@ class _RecordingChipState extends State<RecordingChip> {
   }
 
   @override
+  void didUpdateWidget(covariant RecordingChip oldWidget) {
+    if (widget.audioPath != oldWidget.audioPath) {
+      _player.setUrl(widget.audioPath);
+    }
+
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   void dispose() {
     _player.dispose();
     _processingStateSubscription?.cancel();
@@ -130,9 +138,8 @@ class _RecordingChipState extends State<RecordingChip> {
   }
 
   void playAudio() {
-    setState(() {
-      _player.play();
-    });
+    _player.play();
+    setState(() {});
   }
 
   void pauseAudio() {
