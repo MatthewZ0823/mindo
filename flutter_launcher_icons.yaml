@@ -1,0 +1,4 @@
+flutter_launcher_icons:
+  image_path: "lib/assets/scratch_logo.png"
+  windows:
+    generate: true

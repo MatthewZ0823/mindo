@@ -1,4 +1,4 @@
-package com.example.mindo
+package com.example.scratch
 
 import io.flutter.embedding.android.FlutterActivity
 

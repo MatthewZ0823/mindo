@@ -30,14 +30,14 @@ class _RecordButtonState extends State<RecordButton> {
 
   void handleRecord() async {
     final documentsDir = await getApplicationDocumentsDirectory();
-    final mindoPath = path.join(documentsDir.path, "mindo_test_recordings");
-    final mindoDir = await Directory(mindoPath).create();
+    final scratchPath = path.join(documentsDir.path, "scratch_recordings");
+    final scratchDir = await Directory(scratchPath).create();
 
     final now = DateTime.now();
     final fileName =
         "${now.year}-${now.month}-${now.day}--${now.hour}-${now.minute}-${now.second}.m4a";
 
-    final audioPath = path.join(mindoDir.path, fileName);
+    final audioPath = path.join(scratchDir.path, fileName);
 
     if (await _recorder.hasPermission()) {
       await _recorder.start(

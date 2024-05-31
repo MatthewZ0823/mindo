@@ -1,6 +1,6 @@
 {
-    "name": "mindo",
-    "short_name": "mindo",
+    "name": "Scratch",
+    "short_name": "Scratch",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

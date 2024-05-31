@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:mindo/custom_block_embeds.dart';
-import 'package:mindo/document_manager.dart';
+import 'package:scratch/custom_block_embeds.dart';
+import 'package:scratch/document_manager.dart';
 
 import 'date_controller.dart';
 import 'record_button.dart';
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mindo',
+      title: 'Scratch',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,

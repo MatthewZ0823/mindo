@@ -138,6 +138,7 @@ class _RecordingChipState extends State<RecordingChip> {
   }
 
   void playAudio() {
+    _player.setLoopMode(LoopMode.off);
     _player.play();
     setState(() {});
   }

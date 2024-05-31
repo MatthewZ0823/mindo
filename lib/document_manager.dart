@@ -26,7 +26,7 @@ class DocumentManager {
   /// Returns the directory where documents should be saved.
   Future<Directory> _getSaveDirectory() async {
     final directory = await getApplicationDocumentsDirectory();
-    final savePath = path.join(directory.path, "mindo_documents");
+    final savePath = path.join(directory.path, "scratch_documents");
 
     return Directory(savePath);
   }
