@@ -1,4 +1,6 @@
 flutter_launcher_icons:
-  image_path: "lib/assets/scratch_logo.png"
+  image_path: "lib/assets/scratch_logo_transparent_bg.png"
   windows:
     generate: true
+  android: true
+  adaptive_icon_background: "#ffffff"

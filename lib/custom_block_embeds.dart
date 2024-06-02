@@ -114,6 +114,7 @@ class _RecordingChipState extends State<RecordingChip> {
       // Listen for [_player] completing the audio clip
       if (processState == ProcessingState.completed) {
         restartAudio();
+        pauseAudio();
       }
     });
 
@@ -138,9 +139,9 @@ class _RecordingChipState extends State<RecordingChip> {
   }
 
   void playAudio() {
-    _player.setLoopMode(LoopMode.off);
-    _player.play();
-    setState(() {});
+    setState(() {
+      _player.play();
+    });
   }
 
   void pauseAudio() {

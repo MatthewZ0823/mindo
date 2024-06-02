@@ -79,8 +79,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void handleRecordingStopped(String? audioPath) async {
     // TODO: Display something while loading myEmbed
     VoiceMemoEmbed myEmbed = await VoiceMemoEmbed.fromPath(audioPath ?? '');
-    _controller.document.insert(_controller.selection.extentOffset, myEmbed);
-    _focusNode.requestFocus();
+    setState(() {
+      _controller.document.insert(_controller.selection.extentOffset, myEmbed);
+      _focusNode.requestFocus();
+    });
   }
 
   @override
